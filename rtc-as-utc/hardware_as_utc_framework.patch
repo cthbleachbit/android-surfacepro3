@@ -1,0 +1,42 @@
+diff --git a/frameworks/base/services/core/jni/com_android_server_AlarmManagerService.cpp b/frameworks/base/services/core/jni/com_android_server_AlarmManagerService.cpp
+index 95ca0bb7e54..1eb4d2729e0 100644
+--- a/frameworks/base/services/core/jni/com_android_server_AlarmManagerService.cpp
++++ b/frameworks/base/services/core/jni/com_android_server_AlarmManagerService.cpp
+@@ -164,7 +164,7 @@ int AlarmImplTimerFd::set(int type, struct timespec *ts)
+ int AlarmImplTimerFd::setTime(struct timeval *tv)
+ {
+     struct rtc_time rtc;
+-    struct tm tm, *localtime_res, *gmtime_res;
++    struct tm tm, *gmtime_res;
+     int fd;
+     int res;
+ 
+@@ -187,23 +187,11 @@ int AlarmImplTimerFd::setTime(struct timeval *tv)
+         return res;
+     }
+ 
+-    // @jide when persist.rtc_local_time is set to 1, we store the localtime to rtc
+-    //
+-    bool rtc_local_time = property_get_bool("persist.rtc_local_time", false);
+-    if (rtc_local_time) {
+-        localtime_res = localtime_r(&tv->tv_sec, &tm);
+-        if (!localtime_res) {
+-            ALOGV("localtime_r() failed: %s\n", strerror(errno));
+-            res = -1;
+-            goto done;
+-        }
+-    } else {
+-        gmtime_res = gmtime_r(&tv->tv_sec, &tm);
+-        if (!gmtime_res) {
+-            ALOGV("gmtime_r() failed: %s\n", strerror(errno));
+-            res = -1;
+-            goto done;
+-        }
++    gmtime_res = gmtime_r(&tv->tv_sec, &tm);
++    if (!gmtime_res) {
++        ALOGV("gmtime_r() failed: %s\n", strerror(errno));
++        res = -1;
++        goto done;
+     }
+ 
+     memset(&rtc, 0, sizeof(rtc));
